@@ -4,6 +4,7 @@ var browserify = require('browserify');
 var source     = require('vinyl-source-stream');
 var path       = require('path');
 var coffeeify  = require('coffeeify');
+var stringify  = require('stringify');
 var config     = Elixir.config;
 
 Elixir.extend('coffeeify', function(src, output, options) {
@@ -23,7 +24,12 @@ Elixir.extend('coffeeify', function(src, output, options) {
 				extensions: ['.coffee'],
 				debug: config.production ? false : true
 			})
-			.transform(coffeeify)
+			.transform(stringify, {
+				appliesTo: { includeExtensions: ['.tpl'] }
+			})
+			.transform(coffeeify, {
+				appliesTo: { includeExtensions: ['.coffee'] }
+			})
 			.bundle()
 			.on('error', function(e) {
 				new Elixir.Notification().error(e, 'CoffeeScript Compilation Failed!');
