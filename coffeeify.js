@@ -26,7 +26,11 @@ Elixir.extend('coffeeify', function(src, output, options) {
 			})
 			.transform(stringify, {
 				appliesTo: { includeExtensions: ['.tpl'] },
-				minify: true
+				minify: config.production ? true : false,
+				minifyOptions: {
+					collapseWhitespace: true,
+					conservativeCollapse: true
+				}
 			})
 			.transform(coffeeify, {
 				appliesTo: { includeExtensions: ['.coffee'] }
