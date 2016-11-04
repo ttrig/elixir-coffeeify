@@ -1,17 +1,23 @@
-var gulp       = require('gulp');
-var Elixir     = require('laravel-elixir');
-var browserify = require('browserify');
-var source     = require('vinyl-source-stream');
-var path       = require('path');
-var coffeeify  = require('coffeeify');
-var stringify  = require('stringify');
-var config     = Elixir.config;
+var gulp       = require('gulp'),
+    Elixir     = require('laravel-elixir'),
+    path       = require('path'),
+    source     = require('vinyl-source-stream'),
+    browserify = require('browserify'),
+    stringify  = require('stringify'),
+    coffeeify  = require('coffeeify'),
+    config     = Elixir.config;
+
 
 Elixir.extend('coffeeify', function(src, output, options) {
+	config.js.coffee = {'folder': 'coffee'};
 	var paths = prepGulpPaths(src, output);
 
 	new Elixir.Task('coffeeify', function() {
-		this.log(paths.src, paths.output);
+		that        = this;
+		this.src    = paths.src.path;
+		this.output = paths.output.path;
+
+		this.recordStep('Compiling');
 
 		var files = paths.src.path;
 		if (files.constructor !== Array) {
@@ -36,13 +42,10 @@ Elixir.extend('coffeeify', function(src, output, options) {
 				appliesTo: { includeExtensions: ['.coffee'] }
 			})
 			.bundle()
-			.on('error', function(e) {
-				new Elixir.Notification().error(e, 'CoffeeScript Compilation Failed!');
-				this.emit('end');
-			})
+			.on('error', that.onError)
 			.pipe(source(outputFile))
 			.pipe(gulp.dest(paths.output.baseDir))
-			.pipe(new Elixir.Notification('CoffeeScript Compiled [coffeeify]!'));
+			.pipe(new Elixir.Notification('Coffeescript application compiled!'));
 		}
 
 		return files.map(make);
@@ -54,12 +57,12 @@ Elixir.extend('coffeeify', function(src, output, options) {
 /**
  * Prep the Gulp src and output paths.
  *
- * @param  {string|array} src
+ * @param  {string|Array} src
  * @param  {string|null}  output
- * @return {object}
+ * @return {Elixir.GulpPaths}
  */
 var prepGulpPaths = function(src, output) {
 	return new Elixir.GulpPaths()
 		.src(src, config.get('assets.js.coffee.folder'))
-		.output(output || config.get('public.js.outputFolder'), 'all.js');
+		.output(output || config.get('public.js.outputFolder'), 'main.js');
 };

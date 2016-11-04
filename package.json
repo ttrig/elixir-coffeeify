@@ -1,20 +1,27 @@
 {
   "name": "elixir-coffeeify",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "An extension for laravel elixir to use browserify with coffee files",
   "main": "coffeeify.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cd test && mocha"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/vinnizworld/elixir-coffeeify.git"
+    "url": "https://github.com/ttrig/elixir-coffeeify.git"
   },
   "dependencies": {
     "browserify": "^11.2.0",
     "coffeeify": "^1.1.0",
     "vinyl-source-stream": "^1.1.0",
     "stringify": "^5.1.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "gulp": "^3.9.1",
+    "laravel-elixir": "^6.0.0-13",
+    "mocha": "^3.1.2",
+    "rimraf": "^2.5.4"
   },
   "keywords": [
     "laravel",
@@ -26,10 +33,13 @@
     "coffee",
     "extension"
   ],
-  "author": "Vinay Aggarwal",
+  "author": "Vinay Aggarwal (https://github.com/vinnizworld/elixir-coffeeify)",
+  "contributors": [
+    "Markus L <markus@bredband2.se>"
+  ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/vinnizworld/elixir-coffeeify/issues"
+    "url": "https://github.com/ttrig/elixir-coffeeify/issues"
   },
-  "homepage": "https://github.com/vinnizworld/elixir-coffeeify#readme"
+  "homepage": "https://github.com/ttrig/elixir-coffeeify#readme"
 }
