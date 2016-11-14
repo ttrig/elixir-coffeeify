@@ -2,9 +2,11 @@ var gulp       = require('gulp'),
     Elixir     = require('laravel-elixir'),
     path       = require('path'),
     source     = require('vinyl-source-stream'),
+    buffer     = require('vinyl-buffer'),
     browserify = require('browserify'),
     stringify  = require('stringify'),
     coffeeify  = require('coffeeify'),
+    $          = Elixir.Plugins,
     config     = Elixir.config;
 
 
@@ -24,31 +26,35 @@ Elixir.extend('coffeeify', function(src, output, options) {
 
 var gulpTask = function(paths, options) {
 	this.recordStep('Compiling CoffeeScript');
-	var outputFile = path.basename(paths.src.path).replace('.coffee', '.js');
-	var that = this;
+	var outputFile = path.basename(paths.output.path);
 	return browserify(paths.src.path, {
 		extensions: ['.coffee'],
-		debug: config.production ? false : true
+		debug: !!config.production
 	})
 	.transform(stringify, {
-		appliesTo: { includeExtensions: ['.tpl'] },
-		minify: config.production ? true : false,
+		appliesTo: {
+			includeExtensions: ['.tpl']
+		},
+		minify: !!config.production,
 		minifyOptions: {
 			collapseWhitespace: true,
 			conservativeCollapse: true
 		}
 	})
 	.transform(coffeeify, {
-		appliesTo: { includeExtensions: ['.coffee'] }
+		header: true
 	})
 	.bundle()
 	.on('error', function(er) {
 		new Elixir.Notification('CoffeeScript Compilation Failed!');
 		Elixir.log.divider().error(er).divider();
-		that.recordStep('Error!');
 		this.emit('end');
 	})
 	.pipe(source(outputFile))
+	.pipe(buffer())
+	.pipe($.if(config.sourcemaps, $.sourcemaps.init()))
+	.pipe($.if(config.production, $.uglify()))
+	.pipe($.if(config.sourcemaps, $.sourcemaps.write('.')))
 	.pipe(gulp.dest(paths.output.baseDir))
 	.pipe(new Elixir.Notification('Coffeescript application compiled!'));
 };

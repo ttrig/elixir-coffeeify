@@ -23,7 +23,7 @@ global.runGulp = function(assertions) {
 	gulp.start('default', function() {
 		setTimeout(function() {
 			assertions();
-			remove.sync('./public');
+			//remove.sync('./public');
 		}, 100);
 	});
 };
