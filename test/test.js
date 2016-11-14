@@ -1,17 +1,22 @@
-var fs     = require('fs');
-var chai   = require('chai');
-var remove = require('rimraf');
-var assert = chai.assert;
+var fs     = require('fs'),
+    chai   = require('chai'),
+    remove = require('rimraf'),
+    assert = chai.assert;
 
 require('../coffeeify.js');
 
 Elixir.config.notifications = false;
+
 
 global.shouldExist = function(file, contents) {
 	assert.isTrue(fs.existsSync(file));
 	if (contents) {
 		assert.include(fs.readFileSync(file, { encoding: 'utf8' }), contents);
 	}
+};
+
+global.shouldNotExist = function(file) {
+	assert.isFalse(fs.existsSync(file));
 };
 
 global.runGulp = function(assertions) {
@@ -23,8 +28,10 @@ global.runGulp = function(assertions) {
 	});
 };
 
+
 describe('Coffeeify Task', function() {
 	beforeEach(function() { Elixir.tasks.empty(); });
+
 
 	it('compiles to default output path', function(done) {
 		Elixir(function(mix) {
@@ -36,6 +43,7 @@ describe('Coffeeify Task', function() {
 		});
 	});
 
+
 	it('compiles to custom output path', function(done) {
 		Elixir(function(mix) {
 			mix.coffeeify('main.coffee', 'public/js/app');
@@ -46,15 +54,16 @@ describe('Coffeeify Task', function() {
 		});
 	});
 
-	it('compiles multiple applications', function(done) {
+
+	it('should not compile on error', function(done) {
 		Elixir(function(mix) {
-			mix.coffeeify(['foo.coffee', 'bar.coffee']);
+			mix.coffeeify('bork.coffee');
 		});
 		runGulp(function() {
-			shouldExist('public/js/foo.js', 'Foo');
-			shouldExist('public/js/bar.js', 'Bar');
+			shouldNotExist('public/js/bork.js');
 			done();
 		});
 	});
+
 
 });

@@ -13,46 +13,46 @@ Elixir.extend('coffeeify', function(src, output, options) {
 	var paths = prepGulpPaths(src, output);
 
 	new Elixir.Task('coffeeify', function() {
-		that        = this;
 		this.src    = paths.src.path;
 		this.output = paths.output.path;
-
-		this.recordStep('Compiling');
-
-		var files = paths.src.path;
-		if (files.constructor !== Array) {
-			files = [files];
-		}
-
-		function make(file) {
-			var outputFile = path.basename(file).replace('.coffee','.js');
-			return browserify(file, {
-				extensions: ['.coffee'],
-				debug: config.production ? false : true
-			})
-			.transform(stringify, {
-				appliesTo: { includeExtensions: ['.tpl'] },
-				minify: config.production ? true : false,
-				minifyOptions: {
-					collapseWhitespace: true,
-					conservativeCollapse: true
-				}
-			})
-			.transform(coffeeify, {
-				appliesTo: { includeExtensions: ['.coffee'] }
-			})
-			.bundle()
-			.on('error', that.onError)
-			.pipe(source(outputFile))
-			.pipe(gulp.dest(paths.output.baseDir))
-			.pipe(new Elixir.Notification('Coffeescript application compiled!'));
-		}
-
-		return files.map(make);
+		return gulpTask.call(this, paths, options);
 	})
-	.watch(config.get('assets.js.coffee.folder') + '/**/*.coffee')
+	.watch(paths.src.baseDir + '/**/*.coffee')
 	.ignore(paths.output.path);
 });
+
+
+var gulpTask = function(paths, options) {
+	this.recordStep('Compiling CoffeeScript');
+	var outputFile = path.basename(paths.src.path).replace('.coffee', '.js');
+	var that = this;
+	return browserify(paths.src.path, {
+		extensions: ['.coffee'],
+		debug: config.production ? false : true
+	})
+	.transform(stringify, {
+		appliesTo: { includeExtensions: ['.tpl'] },
+		minify: config.production ? true : false,
+		minifyOptions: {
+			collapseWhitespace: true,
+			conservativeCollapse: true
+		}
+	})
+	.transform(coffeeify, {
+		appliesTo: { includeExtensions: ['.coffee'] }
+	})
+	.bundle()
+	.on('error', function(er) {
+		new Elixir.Notification('CoffeeScript Compilation Failed!');
+		Elixir.log.divider().error(er).divider();
+		that.recordStep('Error!');
+		this.emit('end');
+	})
+	.pipe(source(outputFile))
+	.pipe(gulp.dest(paths.output.baseDir))
+	.pipe(new Elixir.Notification('Coffeescript application compiled!'));
+};
+
 
 /**
  * Prep the Gulp src and output paths.
@@ -64,5 +64,5 @@ Elixir.extend('coffeeify', function(src, output, options) {
 var prepGulpPaths = function(src, output) {
 	return new Elixir.GulpPaths()
 		.src(src, config.get('assets.js.coffee.folder'))
-		.output(output || config.get('public.js.outputFolder'), 'main.js');
+		.output(output || config.get('public.js.outputFolder'), 'bundle.js');
 };
