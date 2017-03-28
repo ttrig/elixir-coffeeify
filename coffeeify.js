@@ -29,13 +29,13 @@ var gulpTask = function(paths, options) {
 	var outputFile = path.basename(paths.output.path);
 	return browserify(paths.src.path, {
 		extensions: ['.coffee'],
-		debug: !!config.production
+		debug: !config.production
 	})
 	.transform(stringify, {
 		appliesTo: {
 			includeExtensions: ['.tpl']
 		},
-		minify: !!config.production,
+		minify: !config.production,
 		minifyOptions: {
 			collapseWhitespace: true,
 			conservativeCollapse: true
